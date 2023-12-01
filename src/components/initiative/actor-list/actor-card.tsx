@@ -87,7 +87,7 @@ export function ActorCard({
           <Input value={displayName} onChange={onDisplayNameChanged} />
         </Grid>
 
-        {curHitPoints && maxHitPoints && (
+        {curHitPoints != undefined && maxHitPoints != undefined && (
           <Grid sm="auto">
             <Stack direction="row" gap={1}>
               <Typography

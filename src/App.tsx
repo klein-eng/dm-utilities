@@ -1,7 +1,7 @@
 import "./App.css";
 import { Box, Button, CssVarsProvider, Grid, Modal, Stack } from "@mui/joy";
 import { InitiativeHeader } from "./components/initiative/header/initiative-header";
-import { ChangeEventHandler, useState } from "react";
+import { useState } from "react";
 import { Actor } from "./components/initiative/actor-list/actor";
 import { ActorCard } from "./components/initiative/actor-list/actor-card";
 import { Flipper, Flipped } from "react-flip-toolkit";
@@ -82,7 +82,7 @@ function App() {
     setActors(actors.filter((actor) => actor.actorKey !== actorKey));
   };
 
-  let onParentCheckboxChanged: ChangeEventHandler<HTMLInputElement> = () => {
+  let onParentCheckboxChanged = (): void => {
     if (actors.every((actor) => actor.checked === false)) {
       checkAllActors(true);
     } else {
@@ -96,6 +96,27 @@ function App() {
     setActors(actorsCopy);
   };
 
+  let deleteSelectedActors = () => {
+    setActors(actors.filter((actor) => !actor.checked));
+  };
+
+  let applyDamageToSelected = (damageAmount: number) => {
+    let actorsCopy = [...actors];
+    actorsCopy.map((actor) => {
+      if (
+        actor.checked &&
+        actor.curHitPoints != null &&
+        actor.maxHitPoints != null
+      ) {
+        actor.curHitPoints = Math.min(
+          Math.max(actor.curHitPoints - damageAmount, 0),
+          actor.maxHitPoints
+        );
+      }
+    });
+    setActors(actorsCopy);
+  };
+
   sortActors();
 
   return (
@@ -106,6 +127,8 @@ function App() {
           <CheckboxActions
             actors={actors}
             onParentCheckboxChanged={onParentCheckboxChanged}
+            onApplyDamageClicked={applyDamageToSelected}
+            onDeleteClicked={deleteSelectedActors}
           />
           <Stack sx={{ px: 2, pt: 1 }} gap={2}>
             <Flipper flipKey={actors.map((actor) => actor.actorKey).join("")}>
