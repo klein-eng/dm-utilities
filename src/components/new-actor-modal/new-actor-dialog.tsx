@@ -7,13 +7,24 @@ import {
   ModalDialog,
 } from "@mui/joy";
 import { Actor } from "../initiative/actor-list/actor";
+import { ForwardedRef, forwardRef } from "react";
 
 export interface NewActorDialogProps {
   keyIndex: number;
   onSubmit: (newActors: Actor[]) => void;
 }
 
-export function NewActorDialog({ keyIndex, onSubmit }: NewActorDialogProps) {
+export const NewActorDialog = forwardRef(
+  (props: NewActorDialogProps, ref: ForwardedRef<HTMLElement>) => (
+    <Dialog {...props} ref={ref} />
+  )
+);
+
+interface NewActorDialogPropsWithRef extends NewActorDialogProps {
+  ref: ForwardedRef<HTMLElement>;
+}
+
+function Dialog({ keyIndex, onSubmit }: NewActorDialogPropsWithRef) {
   let createActor = (
     initiative: number,
     displayName: string,
