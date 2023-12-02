@@ -24,6 +24,7 @@ export interface ActorCardProps {
   initiative: number;
   displayName: string;
   checked?: boolean;
+  isPC?: boolean;
   curHitPoints?: number;
   maxHitPoints?: number;
 }
@@ -37,6 +38,7 @@ export function ActorCard({
   initiative,
   displayName,
   checked,
+  isPC,
   curHitPoints,
   maxHitPoints,
 }: ActorCardProps) {
@@ -57,7 +59,11 @@ export function ActorCard({
   };
 
   return (
-    <Card variant="soft" color="neutral">
+    <Card
+      variant="soft"
+      color={isPC ? "primary" : "neutral"}
+      invertedColors={isPC}
+    >
       <Grid container direction="row" spacing={2}>
         <Grid>
           <Checkbox

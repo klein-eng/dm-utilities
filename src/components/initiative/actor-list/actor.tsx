@@ -5,4 +5,5 @@ export class Actor {
   checked?: boolean = false;
   maxHitPoints?: number;
   curHitPoints?: number;
+  isPC?: boolean = false;
 }

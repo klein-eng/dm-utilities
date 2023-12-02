@@ -9,11 +9,10 @@ import { CheckboxActions } from "./components/initiative/header/checkbox-actions
 import { NewActorDialog } from "./components/new-actor-modal/new-actor-dialog";
 
 function App() {
-  const [actors, setActors] = useState(getDefaultActors());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [keyIndex] = useState(0);
+  const [keyIndex, setKeyIndex] = useState(0);
 
-  function getDefaultActors(): Actor[] {
+  const getDefaultActors = (): Actor[] => {
     return [
       {
         actorKey: "testKey",
@@ -28,22 +27,27 @@ function App() {
         initiative: 5,
         displayName: "Test2",
         checked: false,
+        isPC: true,
       },
     ];
-  }
+  };
 
-  let addActors = (newActors: Actor[]): void => {
+  const [actors, setActors] = useState(getDefaultActors());
+
+  const addActors = (newActors: Actor[]): void => {
     let actorsCopy = actors.concat(newActors);
     actorsCopy.sort(sortingFunction);
     setActors(actorsCopy);
+    setDialogOpen(false);
+    setKeyIndex(keyIndex + newActors.length);
   };
 
-  let sortActors = (): void => {
+  const sortActors = (): void => {
     let actorsCopy = [...actors];
     actorsCopy.sort(sortingFunction);
   };
 
-  let sortingFunction = (a: Actor, b: Actor): number => {
+  const sortingFunction = (a: Actor, b: Actor): number => {
     if (a.initiative === b.initiative) {
       return 0;
     } else if (a.initiative > b.initiative) {
@@ -53,21 +57,21 @@ function App() {
     }
   };
 
-  let onActorChecked = (actorKey: string, checked: boolean): void => {
+  const onActorChecked = (actorKey: string, checked: boolean): void => {
     let actorsCopy = [...actors];
     let actorIndex = actorsCopy.findIndex((a) => a.actorKey === actorKey);
     actorsCopy[actorIndex].checked = checked;
     setActors(actorsCopy);
   };
 
-  let onActorNameChanged = (actorKey: string, displayName: string): void => {
+  const onActorNameChanged = (actorKey: string, displayName: string): void => {
     let actorsCopy = [...actors];
     let actorIndex = actorsCopy.findIndex((a) => a.actorKey === actorKey);
     actorsCopy[actorIndex].displayName = displayName;
     setActors(actorsCopy);
   };
 
-  let onActorInitiativeChanged = (
+  const onActorInitiativeChanged = (
     actorKey: string,
     initiative: number
   ): void => {
@@ -78,11 +82,11 @@ function App() {
     setActors(actorsCopy);
   };
 
-  let onActorDeleted = (actorKey: string): void => {
+  const onActorDeleted = (actorKey: string): void => {
     setActors(actors.filter((actor) => actor.actorKey !== actorKey));
   };
 
-  let onParentCheckboxChanged = (): void => {
+  const onParentCheckboxChanged = (): void => {
     if (actors.every((actor) => actor.checked === false)) {
       checkAllActors(true);
     } else {
@@ -90,17 +94,17 @@ function App() {
     }
   };
 
-  let checkAllActors = (value: boolean) => {
+  const checkAllActors = (value: boolean) => {
     let actorsCopy = [...actors];
     actorsCopy.forEach((actor) => (actor.checked = value));
     setActors(actorsCopy);
   };
 
-  let deleteSelectedActors = () => {
+  const deleteSelectedActors = () => {
     setActors(actors.filter((actor) => !actor.checked));
   };
 
-  let applyDamageToSelected = (damageAmount: number) => {
+  const applyDamageToSelected = (damageAmount: number) => {
     let actorsCopy = [...actors];
     actorsCopy.map((actor) => {
       if (
