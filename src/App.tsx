@@ -9,8 +9,12 @@ import { CheckboxActions } from "./components/initiative/header/checkbox-actions
 import { NewActorDialog } from "./components/new-actor-modal/new-actor-dialog";
 
 function App() {
+  const undoStackSize = 20;
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keyIndex, setKeyIndex] = useState(0);
+  const [undoStack, setUndoStack] = useState([] as ChangeHistoryStep[]);
+  const [redoStack, setRedoStack] = useState([] as ChangeHistoryStep[]);
 
   const getDefaultActors = (): Actor[] => {
     return [
@@ -34,10 +38,66 @@ function App() {
 
   const [actors, setActors] = useState(getDefaultActors());
 
+  const consolidatedChangeTypes = ["NAME_CHANGE_", "INIT_CHANGE_"];
+  const pushStateToUndoStack = (state: Actor[], changeType: string) => {
+    console.log(undoStack);
+    if (
+      undoStack.length > 0 &&
+      consolidatedChangeTypes.some((t) => changeType.startsWith(t)) &&
+      changeType === undoStack[undoStack.length - 1].changeType
+    ) {
+      console.log("break");
+      return;
+    }
+
+    let newStep = new ChangeHistoryStep();
+    newStep.state = state;
+    newStep.changeType = changeType;
+
+    let undoStackCopy = undoStack.slice(-undoStackSize);
+    undoStackCopy.push(newStep);
+    setUndoStack(undoStackCopy);
+    setRedoStack([]);
+    console.log("finished");
+  };
+
+  const setActorsWithUndo = (state: Actor[], changeType: string) => {
+    pushStateToUndoStack(actors, changeType);
+    setActors(state);
+  };
+
+  const pushStateToRedoStack = (state: Actor[], changeType: string) => {
+    let newStep = new ChangeHistoryStep();
+    newStep.state = state;
+    newStep.changeType = changeType;
+
+    let redoStackCopy = redoStack.slice(-undoStackSize);
+    redoStackCopy.push(newStep);
+    setRedoStack(redoStackCopy);
+  };
+
+  const undo = () => {
+    if (undoStack.length > 0) {
+      let undoStackCopy = [...undoStack];
+      const undoneState = undoStackCopy.pop() as ChangeHistoryStep;
+      pushStateToRedoStack(actors, "UNDO");
+      setActors(undoneState.state);
+    }
+  };
+
+  const redo = () => {
+    if (redoStack.length > 0) {
+      let redoStackCopy = [...redoStack];
+      const redoneState = redoStackCopy.pop() as ChangeHistoryStep;
+      pushStateToUndoStack(actors, "REDO");
+      setActors(redoneState.state);
+    }
+  };
+
   const addActors = (newActors: Actor[]): void => {
     let actorsCopy = actors.concat(newActors);
     actorsCopy.sort(sortingFunction);
-    setActors(actorsCopy);
+    setActorsWithUndo(actorsCopy, "ADD_ACTORS");
     setDialogOpen(false);
     setKeyIndex(keyIndex + newActors.length);
   };
@@ -67,6 +127,7 @@ function App() {
   const onActorNameChanged = (actorKey: string, displayName: string): void => {
     let actorsCopy = [...actors];
     let actorIndex = actorsCopy.findIndex((a) => a.actorKey === actorKey);
+    console.log(actors, displayName);
     actorsCopy[actorIndex].displayName = displayName;
     setActors(actorsCopy);
   };
@@ -83,7 +144,10 @@ function App() {
   };
 
   const onActorDeleted = (actorKey: string): void => {
-    setActors(actors.filter((actor) => actor.actorKey !== actorKey));
+    setActorsWithUndo(
+      actors.filter((actor) => actor.actorKey !== actorKey),
+      "DELETE_ACTOR"
+    );
   };
 
   const onParentCheckboxChanged = (): void => {
@@ -101,7 +165,10 @@ function App() {
   };
 
   const deleteSelectedActors = () => {
-    setActors(actors.filter((actor) => !actor.checked));
+    setActorsWithUndo(
+      actors.filter((actor) => !actor.checked),
+      "DELETE_ACTORS"
+    );
   };
 
   const applyDamageToSelected = (damageAmount: number) => {
@@ -118,7 +185,7 @@ function App() {
         );
       }
     });
-    setActors(actorsCopy);
+    setActorsWithUndo(actorsCopy, "APPLY_DAMAGE");
   };
 
   sortActors();
@@ -127,7 +194,12 @@ function App() {
     <CssVarsProvider defaultMode="dark">
       <Box>
         <Stack spacing={1}>
-          <InitiativeHeader />
+          <InitiativeHeader
+            canUndo={undoStack.length > 0}
+            canRedo={redoStack.length > 0}
+            onUndo={undo}
+            onRedo={redo}
+          />
           <CheckboxActions
             actors={actors}
             onParentCheckboxChanged={onParentCheckboxChanged}
@@ -174,6 +246,11 @@ function App() {
       </Box>
     </CssVarsProvider>
   );
+}
+
+class ChangeHistoryStep {
+  state: Actor[] = [];
+  changeType: string = "None";
 }
 
 export default App;

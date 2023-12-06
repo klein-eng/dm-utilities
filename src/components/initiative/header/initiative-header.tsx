@@ -21,7 +21,19 @@ import {
   ListItemDecorator,
 } from "@mui/joy";
 
-export function InitiativeHeader() {
+export interface initiativeHeaderProps {
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+}
+
+export function InitiativeHeader({
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+}: initiativeHeaderProps) {
   return (
     <Sheet sx={{ px: 2, py: 1 }} color="primary" variant="solid" invertedColors>
       <Stack direction="row" justifyContent="space-between">
@@ -30,13 +42,13 @@ export function InitiativeHeader() {
             <MenuOutlined />
           </MenuButton>
           <Menu>
-            <MenuItem>
+            <MenuItem onClick={() => onUndo()} disabled={!canUndo}>
               <ListItemDecorator>
                 <Undo />
               </ListItemDecorator>
               Undo
             </MenuItem>
-            <MenuItem>
+            <MenuItem onClick={() => onRedo()} disabled={!canRedo}>
               <ListItemDecorator>
                 <Redo />
               </ListItemDecorator>
